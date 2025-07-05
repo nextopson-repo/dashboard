@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { adminAPI, type AdminKYCUser } from '../services/api';
 
 type UserData = {
   serial: number;
@@ -12,32 +13,6 @@ type UserData = {
   status: "pending" | "verified" | "not_verified";
   reason?: string;
 };
-
-
-const initialUsers: UserData[] = [
-  {
-    serial: 1,
-    userId: "U001",
-    fullName: "Ramesh Kumar",
-    email: "ramesh.k@example.com",
-    mobileNumber: "9876543210",
-    pictureUrl: "",
-    aadharFrontUrl: "",
-    aadharBackUrl: "",
-    status: "pending",
-  },
-  {
-    serial: 2,
-    userId: "U002",
-    fullName: "Sunita Sharma",
-    email: "sunita.s@example.com",
-    mobileNumber: "9123456789",
-    pictureUrl: "",
-    aadharFrontUrl: "",
-    aadharBackUrl: "",
-    status: "pending",
-  },
-];
 
 const getStatusBadge = (status: UserData["status"]) => {
   switch (status) {
@@ -63,17 +38,60 @@ const getStatusBadge = (status: UserData["status"]) => {
 };
 
 const AadharVerificationTable = () => {
-  const [users, setUsers] = useState<UserData[]>(initialUsers);
+  const [users, setUsers] = useState<UserData[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [reasonInput, setReasonInput] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
 
-  const handleVerify = (index: number) => {
-    const newUsers = [...users];
-    newUsers[index].status = "verified";
-    newUsers[index].reason = "";
-    setUsers(newUsers);
+  // Fetch KYC data from API
+  const fetchKYCData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await adminAPI.getAllKYCSubmissions();
+      // Map API data to UserData type for this table
+      const apiUsers: UserData[] = response.data.map((item, idx) => ({
+        serial: idx + 1,
+        userId: item.userId,
+        fullName: item.fullName,
+        email: item.email,
+        mobileNumber: item.mobileNumber,
+        pictureUrl: item.selfieImageKey && item.selfieImageKey !== 'N/A' ? item.selfieImageKey : '',
+        aadharFrontUrl: item.aadharFrontKey && item.aadharFrontKey !== 'N/A' ? item.aadharFrontKey : '',
+        aadharBackUrl: item.aadharBackKey && item.aadharBackKey !== 'N/A' ? item.aadharBackKey : '',
+        status: item.kycStatus === 'Success' ? 'verified' : item.kycStatus === 'Rejected' ? 'not_verified' : 'pending',
+        reason: '', // You can add a reason field in the backend if needed
+      }));
+      setUsers(apiUsers);
+    } catch (err) {
+      console.error('Error fetching KYC data:', err);
+      setError('Failed to load KYC data. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchKYCData();
+  }, []);
+
+  const handleVerify = async (index: number) => {
+    try {
+      const user = users[index];
+      await adminAPI.updateKYCStatus(user.userId, 'Success');
+      // Update UI
+      const newUsers = [...users];
+      newUsers[index].status = "verified";
+      newUsers[index].reason = "";
+      setUsers(newUsers);
+      console.log(`User ${user.userId} verified successfully`);
+    } catch (err) {
+      console.error('Error verifying user:', err);
+      alert('Failed to verify user. Please try again.');
+    }
   };
 
   const handleNotVerify = (index: number) => {
@@ -82,16 +100,40 @@ const AadharVerificationTable = () => {
     setShowModal(true);
   };
 
-  const handleSaveReason = () => {
+  const handleSaveReason = async () => {
     if (selectedIndex === null) return;
-    const newUsers = [...users];
-    newUsers[selectedIndex].status = "not_verified";
-    newUsers[selectedIndex].reason = reasonInput.trim() || "No reason provided";
-    setUsers(newUsers);
-    setShowModal(false);
-    setSelectedIndex(null);
-    setReasonInput("");
+    try {
+      const user = users[selectedIndex];
+      await adminAPI.updateKYCStatus(user.userId, 'Rejected', reasonInput.trim());
+      const newUsers = [...users];
+      newUsers[selectedIndex].status = "not_verified";
+      newUsers[selectedIndex].reason = reasonInput.trim() || "No reason provided";
+      setUsers(newUsers);
+      setShowModal(false);
+      setSelectedIndex(null);
+      setReasonInput("");
+      console.log(`User ${user.userId} rejected with reason: ${reasonInput.trim()}`);
+    } catch (err) {
+      console.error('Error rejecting user:', err);
+      alert('Failed to reject user. Please try again.');
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="p-6 bg-white min-h-screen flex items-center justify-center">
+        <div className="text-lg">Loading KYC data...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-6 bg-white min-h-screen flex items-center justify-center">
+        <div className="text-red-600 text-lg">{error}</div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 bg-white min-h-screen">
