@@ -2,7 +2,7 @@ import axios from 'axios';
 import type { InternalAxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
 
 // API base URL - adjust this to match your server URL
-const API_BASE_URL = 'http://13.203.227.88:5000/api/v1'; // Update this to your actual server URL
+const API_BASE_URL = 'http://13.200.8.215:5000/api/v1'; // Update this to your actual server URL
 
 // Create axios instance with default config
 const api = axios.create({

@@ -47,6 +47,10 @@ const AadharVerificationTable = () => {
   const [reasonInput, setReasonInput] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
 
+  //img zoom 
+  const [modalImageUrl, setModalImageUrl] = useState<string | null>(null);
+
+
   // Fetch KYC data from API
  const fetchKYCData = async () => {
   try {
@@ -210,21 +214,25 @@ const AadharVerificationTable = () => {
                     <img
                       src={user.pictureUrl}
                       alt="User"
-                      className="h-10 w-10 rounded-full object-cover"
+                      className="h-15 w-15 rounded-full object-cover"
+                      onClick={() => setModalImageUrl(user.pictureUrl)}
                     />
                   </td>
                   <td className="py-2 px-3 border-b border-gray-300">
                     <img
                       src={user.aadharFrontUrl}
                       alt="Aadhar Front"
-                      className="h-12 w-auto object-contain border rounded"
+                      className="object-contain border rounded"
+                       onClick={() => setModalImageUrl(user.aadharFrontUrl)}
+
                     />
                   </td>
                   <td className="py-2 px-3 border-b border-gray-300">
                     <img
                       src={user.aadharBackUrl}
                       alt="Aadhar Back"
-                      className="h-12 w-auto object-contain border rounded"
+                      className="object-contain border rounded"
+                       onClick={() => setModalImageUrl(user.aadharBackUrl)}
                     />
                   </td>
                   <td className="py-2 px-3 border-b border-gray-300 space-x-2 whitespace-nowrap">
@@ -266,7 +274,7 @@ const AadharVerificationTable = () => {
 
       {/* Modal for Not Verify Reason */}
       {showModal && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-30 z-50">
+        <div className="fixed inset-0 flex items-center justify-center bg-[#000000ad] bg-opacity-30 z-50">
           <div className="bg-white p-6 rounded shadow-lg max-w-md w-full">
             <h3 className="text-lg font-semibold mb-4">
               Enter Reason for Not Verification
@@ -296,6 +304,30 @@ const AadharVerificationTable = () => {
           </div>
         </div>
       )}
+
+
+      {/* Modal for Image Zoom */}
+      {modalImageUrl && (
+  <div className="fixed inset-0 bg-[#000000ad] bg-opacity-5 flex items-center justify-center z-50">
+    <div className="relative">
+      {/* Close Button */}
+      <button
+        onClick={() => setModalImageUrl(null)}
+        className="absolute top-2 right-2 bg-white text-black rounded-full px-2 py-1 text-sm font-bold hover:bg-gray-200 z-10"
+      >
+        ✕
+      </button>
+
+      {/* Full Image */}
+      <img
+        src={modalImageUrl}
+        alt="Full Size"
+        className="max-h-[80vh] max-w-[80vh]  rounded shadow-lg object-contain"
+      />
+    </div>
+  </div>
+)}
+
     </div>
   );
 };
