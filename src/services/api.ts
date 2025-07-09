@@ -2,7 +2,7 @@ import axios from 'axios';
 import type { InternalAxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
 
 // API base URL - adjust this to match your server URL
-const API_BASE_URL = 'http://localhost:5000/api/v1'; // Update this to your actual server URL
+const API_BASE_URL = 'http://13.203.227.88:5000/api/v1'; // Update this to your actual server URL
 
 // Create axios instance with default config
 const api = axios.create({
@@ -35,6 +35,25 @@ api.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
+//image upload API types
+
+// S3 Helper to get signed image URL
+export const s3API = {
+  getImageUrlByKey: async (key: string): Promise<string | null> => {
+    if (!key || key === 'N/A') return null;
+    try {
+      const response = await api.post('/s3/keytoimg', { key });
+      return response.data.data.url;
+    } catch (error) {
+      console.error('Failed to get signed S3 URL:', error);
+      return null;
+    }
+  },
+};
+
+
+// Image upload API END 
 
 // KYC API types
 export interface KYCData {

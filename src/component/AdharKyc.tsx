@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { adminAPI, type AdminKYCUser } from '../services/api';
+import { adminAPI , type AdminKYCUser } from '../services/api';
+import { s3API } from '../services/api';
 
 type UserData = {
   serial: number;
@@ -47,32 +48,50 @@ const AadharVerificationTable = () => {
   const [searchQuery, setSearchQuery] = useState("");
 
   // Fetch KYC data from API
-  const fetchKYCData = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const response = await adminAPI.getAllKYCSubmissions();
-      // Map API data to UserData type for this table
-      const apiUsers: UserData[] = response.data.map((item, idx) => ({
-        serial: idx + 1,
-        userId: item.userId,
-        fullName: item.fullName,
-        email: item.email,
-        mobileNumber: item.mobileNumber,
-        pictureUrl: item.selfieImageKey && item.selfieImageKey !== 'N/A' ? item.selfieImageKey : '',
-        aadharFrontUrl: item.aadharFrontKey && item.aadharFrontKey !== 'N/A' ? item.aadharFrontKey : '',
-        aadharBackUrl: item.aadharBackKey && item.aadharBackKey !== 'N/A' ? item.aadharBackKey : '',
-        status: item.kycStatus === 'Success' ? 'verified' : item.kycStatus === 'Rejected' ? 'not_verified' : 'pending',
-        reason: '', // You can add a reason field in the backend if needed
-      }));
-      setUsers(apiUsers);
-    } catch (err) {
-      console.error('Error fetching KYC data:', err);
-      setError('Failed to load KYC data. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  };
+ const fetchKYCData = async () => {
+  try {
+    setLoading(true);
+    setError(null);
+
+    const response = await adminAPI.getAllKYCSubmissions();
+
+    const apiUsers: UserData[] = await Promise.all(
+      response.data.map(async (item: AdminKYCUser, idx: number) => {
+        const [pictureUrl, aadharFrontUrl, aadharBackUrl] = await Promise.all([
+          s3API.getImageUrlByKey(item.selfieImageKey ?? ''),
+          s3API.getImageUrlByKey(item.aadharFrontKey ?? ''),
+          s3API.getImageUrlByKey(item.aadharBackKey ?? ''),
+        ]);
+
+        return {
+          serial: idx + 1,
+          userId: item.userId,
+          fullName: item.fullName,
+          email: item.email,
+          mobileNumber: item.mobileNumber,
+          pictureUrl: pictureUrl ?? '',
+          aadharFrontUrl: aadharFrontUrl ?? '',
+          aadharBackUrl: aadharBackUrl ?? '',
+          status:
+            item.kycStatus === 'Success'
+              ? 'verified'
+              : item.kycStatus === 'Rejected'
+              ? 'not_verified'
+              : 'pending',
+          reason: '',
+        };
+      })
+    );
+
+    setUsers(apiUsers);
+  } catch (err) {
+    console.error('Error fetching KYC data:', err);
+    setError('Failed to load KYC data. Please try again.');
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   useEffect(() => {
     fetchKYCData();
