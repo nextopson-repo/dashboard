@@ -33,6 +33,13 @@ const Header = () => {
         >
           Suspend User
         </Link>
+     
+      <Link
+          to="/user-stats"
+          className="px-8 py-4  bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700 transition"
+        >
+         Users Status
+        </Link>
       </div>
     </div>
   

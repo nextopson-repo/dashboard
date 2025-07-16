@@ -77,29 +77,30 @@ const SuspendedUsers = () => {
   };
 
   return (
-    <div className="min-h-screen p-6 bg-gray-100">
-      <h1 className="text-2xl font-bold mb-6">Suspended Users List</h1>
+<div className="min-h-screen p-6 text-gray-800">
+    <div className="w-[90wh] bg-white shadow-md rounded-lg p-6 space-y-6">
+      <h1 className="text-2xl font-semibold text-left text-gray-800 mb-5">Suspended Users List</h1>
 
       <div className="mb-6 flex gap-6 flex-wrap">
         {/* Suspend Section */}
-        <div className="flex gap-2 flex-wrap">
+        <div className="flex gap-4 flex-wrap">
           <input
             type="text"
             placeholder="Enter mobile number"
             value={mobileInput}
             onChange={(e) => setMobileInput(e.target.value)}
-            className="p-2 border rounded w-64"
+            className="p-2 w-64 border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
           <input
             type="text"
             placeholder="Enter reason for suspension"
             value={reasonInput}
             onChange={(e) => setReasonInput(e.target.value)}
-            className="p-2 border rounded w-64"
+            className="p-2 w-64 border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
           <button
             onClick={handleSuspend}
-            className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
+            className="bg-red-500 hover:bg-red-600 text-white font-semibold px-5 py-2 rounded shadow"
             disabled={loading}
           >
             Suspend User
@@ -113,18 +114,18 @@ const SuspendedUsers = () => {
             placeholder="Enter mobile number"
             value={unsuspendMobile}
             onChange={(e) => setUnsuspendMobile(e.target.value)}
-            className="p-2 border rounded w-64"
+            className="p-2 w-64 border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
           <input
             type="text"
             placeholder="Reason for un-suspension"
             value={unsuspendReason}
             onChange={(e) => setUnsuspendReason(e.target.value)}
-            className="p-2 border rounded w-64"
+            className="p-2 w-64 border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
           <button
             onClick={handleUnsuspend}
-            className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+            className="bg-green-500 hover:bg-green-600 text-white font-semibold px-5 py-2 rounded shadow"
             disabled={loading}
           >
             Un-Suspend User
@@ -132,22 +133,22 @@ const SuspendedUsers = () => {
         </div>
       </div>
 
-      {error && <div className="text-red-600 mb-4">{error}</div>}
+      {error && <div className="text-red-600 font-medium">{error}</div>}
       {loading ? (
         <div>Loading...</div>
       ) : (
-        <table className="min-w-full bg-white border shadow-md rounded">
-          <thead className="bg-gray-200">
+        <table className="min-w-full border border-gray-300 rounded text-sm mt-2">
+          <thead className="bg-gray-100 text-gray-700 font-medium">
             <tr>
-              <th className="p-2 border">S.No.</th>
-              <th className="p-2 border">User ID</th>
-              <th className="p-2 border">Full Name</th>
-              <th className="p-2 border">Mobile Number</th>
-              <th className="p-2 border">Email</th>
-              <th className="p-2 border">Reason for Suspension</th>
+              <th className="p-2  px-4 border">S.No.</th>
+              <th className="p-2  px-4 border">User ID</th>
+              <th className="p-2  px-4 border">Full Name</th>
+              <th className="p-2  px-4 border">Mobile Number</th>
+              <th className="p-2  px-4 border">Email</th>
+              <th className="p-2  px-4 border">Reason for Suspension</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className="text-center text-gray-700">
             {users.map((user) => (
               <tr key={user.serial + user.mobileNumber}>
                 <td className="p-2 border text-center">{user.serial}</td>
@@ -161,6 +162,7 @@ const SuspendedUsers = () => {
           </tbody>
         </table>
       )}
+    </div>
     </div>
   );
 };
